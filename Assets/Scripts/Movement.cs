@@ -21,13 +21,6 @@ public class Movement : MonoBehaviour
         groundMask = 1 << LayerMask.NameToLayer("Ground");
 
         Block block = BlockManager.Instance.GetBlock("block:dirt");
-        block.transform.Translate(Vector3.left);
-        block = BlockManager.Instance.GetBlock("block:coal");
-        block.transform.Translate(Vector3.down);
-        block = BlockManager.Instance.GetBlock("block:coal");
-        block.transform.Translate(Vector3.right);
-        block.transform.Translate(Vector3.down);
-        block.transform.Translate(Vector3.down);
     }
 
     private void FixedUpdate()
@@ -37,6 +30,9 @@ public class Movement : MonoBehaviour
     }
     void Update()
     {
+        if (GameValue.isLockControl)
+            return;
+
         UserInput();
         Jump();
     }

@@ -37,6 +37,9 @@ public class Rotate : MonoBehaviour
 
     private void Update()
     {
+        if (GameValue.isLockControl || GameValue.isLockRotate)
+            return;
+
         float angle = 100f;
         float rotationX = angle * Input.GetAxis("Mouse X") * sensitivity.x * Time.deltaTime;
         float rotationY = angle * Input.GetAxis("Mouse Y") * sensitivity.y * Time.deltaTime;

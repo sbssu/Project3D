@@ -23,7 +23,7 @@ public class Singleton<T> : MonoBehaviour
         }
     }
 
-    private void Awake()
+    protected void Awake()
     {
         instance = this as T;
     }
