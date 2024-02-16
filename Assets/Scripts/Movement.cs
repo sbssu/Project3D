@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
+    [Header("Camera")]
+    [SerializeField] Transform camTransform;
+    [SerializeField] Transform firstPosition;
+    [SerializeField] Transform thirdPosition;
+    [SerializeField] GameObject body;
+
+    [Header("Movement")]
     [SerializeField] float gravityScale;        // 중력 배율.
     [SerializeField] float jumpHeight;          // 점프 높이.
     [SerializeField] float movSpeed;            // 이동 속도.
@@ -12,6 +19,7 @@ public class Movement : MonoBehaviour
     Vector3 velocity;                           // 속력.
     LayerMask groundMask;                       // 지면 마스크.
     bool isGrounded;                            // 땅에 서 있는가?
+    bool isThirdCam;                            // 3인칭 시점인가?
 
     float GRAVITY_VALUE => -9.81f * gravityScale;   // 실제 중력 값.
 
@@ -20,7 +28,8 @@ public class Movement : MonoBehaviour
         controller = GetComponent<CharacterController>();
         groundMask = 1 << LayerMask.NameToLayer("Ground");
 
-        Block block = BlockManager.Instance.GetBlock("block:dirt");
+        isThirdCam = true;
+        SwitchCamEye();
     }
 
     private void FixedUpdate()
@@ -35,6 +44,21 @@ public class Movement : MonoBehaviour
 
         UserInput();
         Jump();
+
+        if(Input.GetKeyDown(KeyCode.F3))
+        {
+            SwitchCamEye();
+        }
+    }
+
+    private void SwitchCamEye()
+    {
+        isThirdCam = !isThirdCam;
+
+        Transform camPosition = isThirdCam ? thirdPosition : firstPosition;
+        camTransform.position = camPosition.position;
+        camTransform.rotation = camPosition.rotation;
+        body.SetActive(isThirdCam);
     }
 
     private void Gravity()

@@ -4,22 +4,26 @@ using UnityEngine;
 
 public class Inventory : Singleton<Inventory>
 {
-    string[] slots = new string[9 * 3];
-    string[] equips = new string[4];
-    string[] quicks = new string[9];
+    [SerializeField] ItemDB itemDB;
+        
+
+    [System.NonSerialized] Item[] slots = new Item[9 * 3];
+    [System.NonSerialized] Item[] equips = new Item[4];
+    [System.NonSerialized] Item[] quicks = new Item[9];
     int quickIndex = 0;
 
-    public void UpdateQuickIndex(bool isLeft)
+
+    private void Start()
     {
-        quickIndex += (isLeft ? -1 : 1);
-        if (quickIndex < 0)
-            quickIndex = 8;
-        else if (quickIndex > 8)
-            quickIndex = 0;
+        for (int i = 0; i < slots.Length; i++)
+            slots[i] = null;
+        for (int i = 0; i < equips.Length; i++)
+            equips[i] = null;
+        for (int i = 0; i < slots.Length; i++)
+            slots[i] = null;
 
-        InventoryUI.Instance.UpdateQuickIndex(quickIndex);
+        AddItem("block:dirt");
     }
-
     private void Update()
     {
         if (GameValue.isLockControl)
@@ -32,5 +36,28 @@ public class Inventory : Singleton<Inventory>
 
         if (Input.GetKeyDown(KeyCode.E))
             InventoryUI.Instance.Switch();
+    }
+
+    public void AddItem(string itemCode)
+    {
+        AddItem(itemDB.GetItem(itemCode));
+    }
+    public void AddItem(Item item)
+    {
+        int index = System.Array.FindIndex(slots, slot => slot == null);
+        if (index >= 0)
+            slots[index] = item;
+
+        InventoryUI.Instance.UpdateInven(slots);
+    }
+    public void UpdateQuickIndex(bool isLeft)
+    {
+        quickIndex += (isLeft ? -1 : 1);
+        if (quickIndex < 0)
+            quickIndex = 8;
+        else if (quickIndex > 8)
+            quickIndex = 0;
+
+        InventoryUI.Instance.UpdateQuickIndex(quickIndex);
     }
 }
