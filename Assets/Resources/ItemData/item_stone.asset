@@ -10,7 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a1b624ae0bb2ac408ade2f2553570d5, type: 3}
-  m_Name: tile_stone
+  m_Name: item_stone
   m_EditorClassIdentifier: 
   id: block:stone
+  itemName: "\uB3CC \uBE14\uB85D"
+  itemSprite: {fileID: -739191179, guid: bf87fa8c9c7459c46994b602aa8de751, type: 3}
   texture: {fileID: 2800000, guid: 656e86344fde1a24a97ea1ab668dfa4d, type: 3}

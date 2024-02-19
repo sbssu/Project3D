@@ -40,15 +40,15 @@ public class InventoryUI : Singleton<InventoryUI>
         Switch(false);
     }
 
-    public void Switch(bool isForce = false)
+    public void Switch()
     {
         // 스위칭
         // GameObject.activeSelf:bool => 활성화 여부
-        if (isForce)
-            panel.SetActive(isForce);
-        else
-            panel.SetActive(!panel.activeSelf);
-
+        Switch(!panel.activeSelf);
+    }
+    private void Switch(bool isShow)
+    {
+        panel.SetActive(isShow);
         Cursor.lockState = panel.activeSelf ? CursorLockMode.None : CursorLockMode.Locked;
         GameValue.isLockRotate = panel.activeSelf;
     }

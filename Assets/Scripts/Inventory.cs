@@ -40,7 +40,8 @@ public class Inventory : Singleton<Inventory>
 
     public void AddItem(string itemCode)
     {
-        AddItem(itemDB.GetItem(itemCode));
+        Item item = new Item(itemDB.GetItemData(itemCode));
+        AddItem(item);
     }
     public void AddItem(Item item)
     {

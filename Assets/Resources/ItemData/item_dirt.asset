@@ -10,9 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 023788541827e054e982dc34b66f6e67, type: 3}
-  m_Name: sideTile_dirt
+  m_Name: item_dirt
   m_EditorClassIdentifier: 
   id: block:dirt
+  itemName: "\uB545 \uBE14\uB85D"
+  itemSprite: {fileID: 1033466692, guid: bf87fa8c9c7459c46994b602aa8de751, type: 3}
   texture: {fileID: 2800000, guid: 08fb5a6bf7b68214f9f9f9ab304bdb8e, type: 3}
   topColor: {r: 0.48627454, g: 0.70980394, b: 0.30980393, a: 1}
   top: {fileID: 2800000, guid: b168760134173eb4da2e1979fd9558df, type: 3}
