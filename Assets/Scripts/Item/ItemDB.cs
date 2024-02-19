@@ -15,6 +15,7 @@ public class ItemDB : ScriptableObject
         }
     }
 
+
     [SerializeField] ItemData[] itemDatas;
     
     public ItemData GetItemData(string id)
