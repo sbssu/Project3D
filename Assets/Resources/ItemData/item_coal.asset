@@ -10,7 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a1b624ae0bb2ac408ade2f2553570d5, type: 3}
-  m_Name: tile_coal
+  m_Name: item_coal
   m_EditorClassIdentifier: 
   id: block:coal
+  itemName: "\uC11D\uD0C4 \uBE14\uB85D"
+  itemSprite: {fileID: -1164027669, guid: bf87fa8c9c7459c46994b602aa8de751, type: 3}
   texture: {fileID: 2800000, guid: a0ed7a9b26eec584c95296e55b98966f, type: 3}
