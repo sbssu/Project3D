@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using UnityEngine;
 
 public interface IObject<T>
@@ -9,7 +7,7 @@ public interface IObject<T>
     Action<T> returnPool { get; set; }
 }
 
-public class ObjectPoolling<T> : MonoBehaviour
+public class ObjectPool<T> : MonoBehaviour
     where T : MonoBehaviour, IObject<T>
 {
     T prefab;
@@ -21,6 +19,7 @@ public class ObjectPoolling<T> : MonoBehaviour
         prefab = Resources.Load<T>($"Prefabs/{prefabName}");
         parent = new GameObject("parent").transform;
         parent.SetParent(transform);
+        parent.gameObject.SetActive(false);
         storage = new Stack<T>();
 
         CreateItemObject(firstCount);

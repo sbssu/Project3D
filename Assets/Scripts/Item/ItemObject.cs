@@ -40,6 +40,10 @@ public class ItemObject : MonoBehaviour, IObject<ItemObject>
         Setup(id);
     }
 
+    public void Destroy()
+    {
+        (this as IObject<ItemObject>).returnPool(this);
+    }
     public void EatItem(Player owner, Action<string> addItem)
     {        
         StartCoroutine(IEEat(owner, addItem));
@@ -59,5 +63,4 @@ public class ItemObject : MonoBehaviour, IObject<ItemObject>
         addItem(itemData.ID);
         (this as IObject<ItemObject>).returnPool(this);
     }
-
 }

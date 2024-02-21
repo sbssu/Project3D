@@ -1,27 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using UnityEngine;
 
 public class Inventory : Singleton<Inventory>
 {
+    private enum TYPE
+    {
+        Inven,
+        Quick,
+        Equip,
+    }
+
     [SerializeField] ItemDB itemDB;
-        
 
-    [System.NonSerialized] Item[] slots = new Item[9 * 3];
-    [System.NonSerialized] Item[] equips = new Item[4];
-    [System.NonSerialized] Item[] quicks = new Item[9];
-    int quickIndex = 0;
+    // item은 퀵슬롯 -> 인벤 -> 장비 순으로 정렬되어 있다.
+    [System.NonSerialized]
+    Item[] items = new Item[9 + 9 * 3 + 4];
 
+    Item currentHandItem;     // 현재 손에 들고 있는 아이템.
+    int handIndex = 0;        // 퀵슬롯 번호 (손 번호)
 
     private void Start()
     {
-        for (int i = 0; i < slots.Length; i++)
-            slots[i] = null;
-        for (int i = 0; i < equips.Length; i++)
-            equips[i] = null;
-        for (int i = 0; i < slots.Length; i++)
-            slots[i] = null;
-
+        AddItem("block:dirt");
+        AddItem("block:dirt");
         AddItem("block:dirt");
     }
     private void Update()
@@ -36,6 +39,13 @@ public class Inventory : Singleton<Inventory>
 
         if (Input.GetKeyDown(KeyCode.E))
             InventoryUI.Instance.Switch();
+
+        // 이전 프레임에 들고있던 아이템과 현재 아이템이 다를 경우.
+        if (items[handIndex] != currentHandItem)
+        {
+            currentHandItem = items[handIndex];
+            Player.Instance.UpdateHandItem(currentHandItem);
+        }
     }
 
     public void AddItem(string itemCode)
@@ -43,22 +53,62 @@ public class Inventory : Singleton<Inventory>
         Item item = new Item(itemDB.GetItemData(itemCode));
         AddItem(item);
     }
-    public void AddItem(Item item)
+    public bool AddItem(Item item)
     {
-        int index = System.Array.FindIndex(slots, slot => slot == null);
-        if (index >= 0)
-            slots[index] = item;
+        // 빈슬롯 번호를 찾는다.
+        // 다만, 장비 슬롯의 경우 예외로 처리한다.
+        int index = System.Array.FindIndex(items, item => item == null);
+        if (index == -1 || index >= 9 + 9 * 3)
+        {
+            Debug.Log("인벤토리가 꽉 찼습니다.");
+            return false;
+        }
+        items[index] = item;
+        InventoryUI.Instance.UpdateUI(items);
+        InventoryUI.Instance.UpdateQuickIndex(handIndex);
+        return true;
+    }
+    public Item RemoveAtItem(int index)
+    {
+        if (items[index] == null)
+            return null;
 
-        InventoryUI.Instance.UpdateInven(slots);
+        Item item = items[handIndex];       // handIndex에 해당하는 아이템 참조.
+        items[handIndex] = null;            // handIndex 슬롯에 null 대입.
+
+        // UI 업데이트.
+        InventoryUI.Instance.UpdateUI(items);
+        InventoryUI.Instance.UpdateQuickIndex(handIndex);
+
+        return item;
+    }
+
+    public BlockObject GetHandItem()
+    {
+        Item item = RemoveAtItem(handIndex);        // 손에 있는 아이템 꺼내오기.
+        if (item == null)
+            return null;
+
+        // 손에 쥔 아이템을 꺼내서 블록오브젝트로 변경 후 전달.
+        return ItemManager.Instance.GetBlockObject(item.ID);
     }
     public void UpdateQuickIndex(bool isLeft)
     {
-        quickIndex += (isLeft ? -1 : 1);
-        if (quickIndex < 0)
-            quickIndex = 8;
-        else if (quickIndex > 8)
-            quickIndex = 0;
+        handIndex += (isLeft ? -1 : 1);
+        if (handIndex < 0)
+            handIndex = 8;
+        else if (handIndex > 8)
+            handIndex = 0;
 
-        InventoryUI.Instance.UpdateQuickIndex(quickIndex);
+        InventoryUI.Instance.UpdateQuickIndex(handIndex);
     }
+    public void DragItem(int start, int end)
+    {
+        Item temp = items[start];
+        items[start] = items[end];
+        items[end] = temp;
+
+        InventoryUI.Instance.UpdateUI(items);
+    }
+        
 }

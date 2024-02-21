@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using static UnityEditor.Progress;
 
 public class InventoryUI : Singleton<InventoryUI>
@@ -9,35 +12,66 @@ public class InventoryUI : Singleton<InventoryUI>
     [SerializeField] RectTransform invenParent;
     [SerializeField] RectTransform quickParent;
     [SerializeField] RectTransform equipParnet;
+    [SerializeField] RectTransform quickBarParent;
+    [SerializeField] SlotUI previewSlot;
 
     [Header("quick")]
     [SerializeField] RectTransform quickBar;
     [SerializeField] RectTransform quickBarSelection;
 
-    SlotUI[] invenSlots;
-    SlotUI[] quickSlots;
-    SlotUI[] equipSlots;
+    SlotUI[] allSlots;
+    SlotUI[] quickBarSlots;
 
     protected new void Awake()
     {
         base.Awake();
 
-        invenSlots = invenParent.GetComponentsInChildren<SlotUI>();
-        quickSlots = quickParent.GetComponentsInChildren<SlotUI>();
-        equipSlots = equipParnet.GetComponentsInChildren<SlotUI>();
+        SlotUI[] quickSlots = quickParent.GetComponentsInChildren<SlotUI>();
+        SlotUI[] invenSlots = invenParent.GetComponentsInChildren<SlotUI>();
+        SlotUI[] equipSlots = equipParnet.GetComponentsInChildren<SlotUI>();
 
-        List<SlotUI> allSlots = new List<SlotUI>();
-        allSlots.AddRange(invenSlots);
-        allSlots.AddRange(quickSlots);
-        allSlots.AddRange(equipSlots);
+        List<SlotUI> slotList = new List<SlotUI>();
+        slotList.AddRange(quickSlots);
+        slotList.AddRange(invenSlots);
+        slotList.AddRange(equipSlots);
+        allSlots = slotList.ToArray();
 
+        int index = 0;
         foreach (SlotUI slot in allSlots)
-            slot.UpdateSlot(null, string.Empty);
-    }
+        {
+            // regested event.
+            slot.beginDragEvent += BeginDragSlot;
+            slot.dragEnvet += DragSlot;
+            slot.endDragEvent += EndDragSlot;
 
+            // initialize.
+            slot.Setup(index++);
+        }
+
+        quickBarSlots = quickBarParent.GetComponentsInChildren<SlotUI>();
+    }
     private void Start()
     {
+        previewSlot.gameObject.SetActive(false);
         Switch(false);
+    }
+
+    // 마우스 이벤트.
+    private int startDragIndex;
+    private void BeginDragSlot(int button, int slotIndex, Item item)
+    {
+        startDragIndex = slotIndex;
+        previewSlot.UpdateSlot(item);
+        previewSlot.gameObject.SetActive(true);
+    }
+    private void DragSlot()
+    {
+        previewSlot.transform.position = Input.mousePosition;
+    }
+    private void EndDragSlot(int slotIndex)
+    {
+        previewSlot.gameObject.SetActive(false);
+        Inventory.Instance.DragItem(startDragIndex, slotIndex);
     }
 
     public void Switch()
@@ -54,31 +88,13 @@ public class InventoryUI : Singleton<InventoryUI>
     }
 
     // 슬롯 업데이트.
-    public void UpdateInven(Item[] items)
+    public void UpdateUI(Item[] items)
     {
-        UpdateSlot(invenSlots, items);
-    }
-    public void UpdateQuick(Item[] items)
-    {
-        UpdateSlot(quickSlots, items);
-    }
-    public void UpdateEquip(Item[] items)
-    {
-        UpdateSlot(equipSlots, items);
-    }
-    private void UpdateSlot(SlotUI[] slots, Item[] items)
-    {
-        for (int i = 0; i < items.Length; i++)
-        {
-            if (items[i] == null)
-                slots[i].UpdateSlot(null, string.Empty);
-            else
-            {
-                Sprite sprite = items[i].sprite;
-                string text = (items[i].count < 2) ? string.Empty : items[i].count.ToString();
-                slots[i].UpdateSlot(sprite, text);
-            }
-        }
+        for(int i = 0; i<allSlots.Length; i++)
+            allSlots[i].UpdateSlot(items[i]);
+
+        for (int i = 0; i < 9; i++)
+            quickBarSlots[i].UpdateSlot(allSlots[i]);
     }
     
     // 퀵슬롯 인덱스.
@@ -101,4 +117,6 @@ public class InventoryUI : Singleton<InventoryUI>
 
         quickBarSelection.position = position;              // 위치 변경.
     }
+
+
 }

@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
-
-public class Player : MonoBehaviour
+public class Player : Singleton<Player>
 {
     public const int MAX_HP = 20;
     public const int MAX_FOOD = 20;
@@ -13,6 +10,10 @@ public class Player : MonoBehaviour
     [SerializeField] int food;
     [SerializeField] int level;
     [SerializeField] float exp;
+
+    [Header("Position")]
+    [SerializeField] Transform handPivot;
+    [SerializeField] LayerMask blockMask;
 
     float[] expTable = { 0, 100, 124, 137, 158, 200, 214, 365, 400 };
     float starveTime = 2.5f;
@@ -23,6 +24,7 @@ public class Player : MonoBehaviour
     Camera cam;
     StatusUI statusUI;
     LayerMask itemObjectMask;
+    BlockObject handItemObject;      // 손에 들고있는 아이템.
 
     void Start()
     {
@@ -51,20 +53,18 @@ public class Player : MonoBehaviour
         }
 
         // 카메라 정면 상호작용 오브젝트 검색.
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, rayDistance))
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, rayDistance, blockMask))
         {
-            IInterct target = hit.collider.GetComponent<IInterct>();
-            if (target != null)
+            if(Input.GetMouseButtonDown(1))
             {
-                InterectUI.Instance.Setup("F", target.interctName);
-                InterectUI.Instance.SwitchUI(true);
-
-                if (Input.GetKeyDown(KeyCode.F))
-                    target.Interect(this);
+                BlockObject handBlock = Inventory.Instance.GetHandItem();
+                if(handBlock != null)
+                {
+                    Vector3 position = hit.collider.transform.position + hit.normal;
+                    handBlock.transform.position = position;
+                }
             }
         }
-        else
-            InterectUI.Instance.SwitchUI(false);
 
         // 아이템 오브젝트 습득.
         Collider[] colliders = Physics.OverlapSphere(transform.position, 2f, itemObjectMask);
@@ -74,6 +74,28 @@ public class Player : MonoBehaviour
             itemObject.EatItem(this, Inventory.Instance.AddItem);
         }
     }
+
+
+    public void UpdateHandItem(Item item)
+    {
+        if(item == null)
+        {
+            handItemObject?.Destroy();
+            handItemObject = null;
+            return;
+        }
+
+        // 내가 손에 든게 없는데 새로운 아이템을 들어야하는 경우.
+        if (handItemObject == null)
+            handItemObject = ItemManager.Instance.GetBlockObject(item.ID);
+        else
+            handItemObject.Setup(item.ID);
+
+        handItemObject.transform.SetParent(handPivot);
+        handItemObject.transform.localPosition = Vector3.zero;
+        handItemObject.transform.localRotation = Quaternion.identity;
+    }
+
 
     private void OnDrawGizmosSelected()
     {

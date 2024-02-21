@@ -15,6 +15,10 @@ public class BlockObject : MonoBehaviour, IObject<BlockObject>
         ItemData itemData = ItemDB.Instance.GetItemData(id);
         itemData.ApplyTile(planes);
     }
+    public void Destroy()
+    {
+        ((IObject<BlockObject>)this).returnPool(this);
+    }
 
     [ContextMenu("Apply ID")]
     private void Setup()
