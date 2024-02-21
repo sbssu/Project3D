@@ -17,7 +17,11 @@ public class BlockObject : MonoBehaviour, IObject<BlockObject>
     }
     public void Destroy()
     {
-        ((IObject<BlockObject>)this).returnPool(this);
+        Action<BlockObject> callback = ((IObject<BlockObject>)this).returnPool;
+        if (callback == null)
+            Destroy(gameObject);
+        else
+            callback(this);
     }
 
     [ContextMenu("Apply ID")]

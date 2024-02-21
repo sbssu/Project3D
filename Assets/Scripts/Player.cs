@@ -55,13 +55,26 @@ public class Player : Singleton<Player>
         // 카메라 정면 상호작용 오브젝트 검색.
         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, rayDistance, blockMask))
         {
-            if(Input.GetMouseButtonDown(1))
+            // 마우스 왼쪽 클릭.
+            if(Input.GetMouseButtonDown(0))
+            {
+                BlockObject block = hit.collider.GetComponent<BlockObject>();       // 충돌한 물체의 컴포넌트 검색.
+                string id = block.ID;                                               // ID 검색.
+                block.Destroy();                                                    // 블록 삭제.
+                Inventory.Instance.AddItem(id);                                     // 아이템 추가.
+            }
+
+            // 마우스 우측 클릭.
+            else if(Input.GetMouseButtonDown(1))
             {
                 BlockObject handBlock = Inventory.Instance.GetHandItem();
                 if(handBlock != null)
                 {
-                    Vector3 position = hit.collider.transform.position + hit.normal;
-                    handBlock.transform.position = position;
+                    // 설치한 블록의 위치,회전,스케일 값 적용.
+                    Transform hitTransform = hit.collider.transform;
+                    handBlock.transform.position = hitTransform.position + hit.normal;
+                    handBlock.transform.rotation = hitTransform.rotation;
+                    handBlock.transform.localScale = hitTransform.localScale;
                 }
             }
         }

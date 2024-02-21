@@ -26,6 +26,8 @@ public class Inventory : Singleton<Inventory>
         AddItem("block:dirt");
         AddItem("block:dirt");
         AddItem("block:dirt");
+        AddItem("block:sand");
+        AddItem("block:sand");
     }
     private void Update()
     {
@@ -53,28 +55,52 @@ public class Inventory : Singleton<Inventory>
         Item item = new Item(itemDB.GetItemData(itemCode));
         AddItem(item);
     }
-    public bool AddItem(Item item)
+    public bool AddItem(Item newItem)
     {
-        // 빈슬롯 번호를 찾는다.
-        // 다만, 장비 슬롯의 경우 예외로 처리한다.
-        int index = System.Array.FindIndex(items, item => item == null);
-        if (index == -1 || index >= 9 + 9 * 3)
+        bool isSuccess = false;
+
+        // 1.같은 아이템을 찾고 있다면 병합한다.
+        // 2.만약 병합하고도 개수가 남으면 다시 찾는다.
+        for (int i = 0; i < items.Length; i++)
         {
-            Debug.Log("인벤토리가 꽉 찼습니다.");
-            return false;
+            if (items[i] != null && items[i].ID == newItem.ID)
+            {
+                if (items[i].Combine(newItem))
+                {
+                    isSuccess = true;
+                    break;
+                }
+            }
         }
-        items[index] = item;
+
+        // 아직 추가하려는 아이템의 개수가 남아있다.
+        if (newItem.count > 0)
+        {
+            // 3.모든 배열을 돌면서 Combine을 시도했음에도 여전히 개수가 남아있다면 빈 배열에 대입한다.
+            int emptyIndex = System.Array.FindIndex(items, item => item == null);
+            if (emptyIndex < 0)
+            {
+                Debug.Log($"can't add item '{newItem.name}({newItem.count})' because inventory is full!");
+            }
+            else
+            {
+                items[emptyIndex] = newItem;
+                isSuccess = true;
+            }
+        }
+
         InventoryUI.Instance.UpdateUI(items);
         InventoryUI.Instance.UpdateQuickIndex(handIndex);
-        return true;
+        return isSuccess;
     }
-    public Item RemoveAtItem(int index)
+    public Item RemoveAtItem(int index, int count = 1)
     {
         if (items[index] == null)
             return null;
 
         Item item = items[handIndex];       // handIndex에 해당하는 아이템 참조.
-        items[handIndex] = null;            // handIndex 슬롯에 null 대입.
+        if(item.Substrct(count))            // count개수만큼 아이템 빼기.
+            items[handIndex] = null;        // handIndex 슬롯에 null 대입.
 
         // UI 업데이트.
         InventoryUI.Instance.UpdateUI(items);
